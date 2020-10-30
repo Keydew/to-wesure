@@ -1,27 +1,36 @@
 <template>
   <div class="home">
     <header>???</header>
-    <div class="content" ref="content" :style="{paddingBottom:paddingBottom}">
-      <div v-for="(record,index) in chatRecord" :key="index" class="clear-fix">
-        <p ref="chat" :class="record.class">{{record.msg}}</p>
+    <div
+      class="chat-board"
+      ref="content"
+      :style="{ paddingBottom: paddingBottom }"
+    >
+      <div v-for="(record, index) in chatRecord" :key="index" class="clear-fix">
+        <p ref="chat" :class="['chat-msg', record.class]">{{ record.msg }}</p>
       </div>
+      <p v-if="isEnd" class="ending-text">对方已下线</p>
     </div>
     <footer ref="footer">
       <div class="input-row">
         <input type="text" class="input-text" v-model="curChoice" readonly />
         <button
           class="btn-send"
-          :disabled="optionList.length==0||curChoiceIndex<0"
+          :disabled="optionList.length == 0 || curChoiceIndex < 0"
           @click="sendMessage"
-        >发送</button>
+        >
+          发送
+        </button>
       </div>
-      <ul v-if="optionList.length>0" class="selectList">
+      <ul v-if="optionList.length > 0" class="selectList">
         <li
-          v-for="(option,index) in optionList"
+          v-for="(option, index) in optionList"
           :key="index"
           @click="chooseChoice(index)"
           class="option-text"
-        >{{option.text}}</li>
+        >
+          {{ option.text }}
+        </li>
       </ul>
     </footer>
   </div>
@@ -39,6 +48,7 @@ export default {
       chatBorderColor: "#999999", //聊天边框颜色
       paddingBottom: "50px",
       curChoiceIndex: -1,
+      isEnd: false,
     };
   },
   computed: {
@@ -51,8 +61,8 @@ export default {
     },
   },
   created() {
-    console.log(BMap);
-    StoryTool.startStory(this.youSay, this.iSay, this.showOptions);
+    StoryTool.startStory(this.youSay, this.iSay, this.showOptions, this.ending);
+
     // this.youSay("这是一段话，这是一段话。")
     //   .then(() => {
     //     return this.youSay("啊哈哈哈哈~");
@@ -115,6 +125,11 @@ export default {
           setTimeout(resolve, 1000);
         });
       });
+    },
+    ending() {
+      setTimeout(() => {
+        this.isEnd = true;
+      }, 1000);
     },
     createCanvas(ele, color) {
       let canvas = document.createElement("canvas"),
@@ -249,10 +264,10 @@ header {
   color: #555;
   background-color: #f3f5f7;
 }
-.content {
+.chat-board {
   flex: 1;
   overflow-y: auto;
-  p {
+  .chat-msg {
     display: inline-block;
     box-sizing: border-box;
     margin: 15px 15px 0;
@@ -274,6 +289,13 @@ header {
       padding-right: 24px;
       margin-right: 10px;
     }
+  }
+  .ending-text {
+    margin: 15px auto;
+    color: #777;
+    font-size: 14px;
+    text-align: center;
+    background: linear-gradient();
   }
 }
 
@@ -314,7 +336,7 @@ footer {
       margin: 10px;
       padding: 0 10px;
       border-radius: 10px;
-      background-color: #ebedf3;
+      background-color: #dde5ec;
     }
   }
 }

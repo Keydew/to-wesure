@@ -4,15 +4,15 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import '@/style/common.css'
-import Vconsole from 'vconsole';
+// import Vconsole from 'vconsole';
 
-var vcon = new Vconsole();
+// var vcon = new Vconsole();
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */
 new Vue({
-  el: '#app',
-  router,
-  components: { App },
-  template: '<App/>'
+    el: '#app',
+    router,
+    components: { App },
+    template: '<App/>'
 })
