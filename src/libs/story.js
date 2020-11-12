@@ -14,19 +14,15 @@ function startStory(youSay, playerSay, showOptions, ending) {
     oneTurn();
 }
 
+// 正常显示
 function oneTurn() {
     return new Promise(resolve => {
         if (story.canContinue) {
-            // Get ink to generate the next paragraph
+            // 对方说话
             let paragraphText = story.Continue();
-            let tags = story.currentTags;
-
-            if (tags.indexOf('player') > -1) {
-                playerSayFn(paragraphText).then(resolve);
-            } else {
-                youSayFn(paragraphText).then(resolve);
-            }
+            youSayFn(paragraphText).then(resolve);
         } else {
+            // 轮到做选择的时候
             if (story.currentChoices.length > 0) {
                 showOptionsFn(story.currentChoices);
             } else {
@@ -36,9 +32,11 @@ function oneTurn() {
     }).then(oneTurn);
 }
 
+// 选择某一选项后
 function chooseChoice(index) {
     story.ChooseChoiceIndex(index);
-    oneTurn();
+    let msg = story.Continue();
+    playerSayFn(msg).then(oneTurn);
 }
 
 export default {

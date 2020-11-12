@@ -9,27 +9,44 @@
       <div v-for="(record, index) in chatRecord" :key="index" class="clear-fix">
         <p ref="chat" :class="['chat-msg', record.class]">{{ record.msg }}</p>
       </div>
-      <p v-if="isEnd" class="ending-text">对方已下线</p>
+      <p v-if="isEnd" class="ending-text">
+        <i class="icon-cube"></i><i class="icon-cube"></i
+        ><i class="icon-cube"></i>对方已下线<i class="icon-cube"></i
+        ><i class="icon-cube"></i><i class="icon-cube"></i>
+      </p>
     </div>
     <footer ref="footer">
       <div class="input-row">
         <input type="text" class="input-text" v-model="curChoice" readonly />
-        <button
-          class="btn-send"
-          :disabled="optionList.length == 0 || curChoiceIndex < 0"
-          @click="sendMessage"
+        <!-- <div
+          :class="[
+            'btn-send-bg',
+            { disabled: optionList.length == 0 || curChoiceIndex < 0 },
+          ]"
+          @click="curChoiceIndex > -1 ? sendMessage() : ''"
         >
-          发送
-        </button>
+          <div class="btn-send-content">发送</div>
+        </div> -->
+        <button-3d
+          btnColor="#aaccaa"
+          bgColor="#6dad6d"
+          radius="5px"
+          :disabled="optionList.length == 0 || curChoiceIndex < 0"
+          class="btn-send"
+          @click="curChoiceIndex > -1 ? sendMessage() : ''"
+          >发送</button-3d
+        >
       </div>
       <ul v-if="optionList.length > 0" class="selectList">
-        <li
-          v-for="(option, index) in optionList"
-          :key="index"
-          @click="chooseChoice(index)"
-          class="option-text"
-        >
-          {{ option.text }}
+        <li v-for="(option, index) in optionList" :key="index">
+          <button-3d
+            btnColor="#dde5ec"
+            bgColor="#aec4d8"
+            radius="10px"
+            class="btn-option"
+            @click="chooseChoice(index)"
+            >{{ option.text }}</button-3d
+          >
         </li>
       </ul>
     </footer>
@@ -37,7 +54,11 @@
 </template>
 <script>
 import StoryTool from "@/libs/story.js";
+import Button3d from "./Button3d";
 export default {
+  components: {
+    Button3d,
+  },
   data() {
     return {
       timerResize: null,
@@ -47,7 +68,9 @@ export default {
       playerChatColor: "#ddeedd", //玩家聊天框背景色
       chatBorderColor: "#999999", //聊天边框颜色
       paddingBottom: "50px",
+
       curChoiceIndex: -1,
+      justClicked: false,
       isEnd: false,
     };
   },
@@ -62,15 +85,6 @@ export default {
   },
   created() {
     StoryTool.startStory(this.youSay, this.iSay, this.showOptions, this.ending);
-
-    // this.youSay("这是一段话，这是一段话。")
-    //   .then(() => {
-    //     return this.youSay("啊哈哈哈哈~");
-    //   })
-    //   .then(() => {
-    //     return this.iSay("这是我说的话");
-    //   });
-    // this.iSay("这是我说的话，这是我说的话，这是我说的话。");
     window.addEventListener("resize", this.resizeFn);
   },
   watch: {
@@ -244,6 +258,21 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
+@keyframes button-down {
+  0% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(5px);
+  }
+  80% {
+    transform: translateY(5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
 .home {
   position: relative;
   display: flex;
@@ -294,8 +323,16 @@ header {
     margin: 15px auto;
     color: #777;
     font-size: 14px;
+    line-height: 24px;
     text-align: center;
-    background: linear-gradient();
+    .icon-cube {
+      display: inline-block;
+      width: 2px;
+      height: 2px;
+      vertical-align: middle;
+      background-color: #777;
+      margin-left: 1px;
+    }
   }
 }
 
@@ -317,26 +354,43 @@ footer {
       border-radius: 10px;
     }
     .btn-send {
+      width: 50px;
       height: 36px;
       margin: 0 5px;
-      padding: 0 10px;
-      font-size: 18px;
-      line-height: 30px;
-      border-radius: 5px;
-      background-color: #aaccaa;
-      &:disabled {
-        background-color: #ccc;
-      }
+      font-size: 16px;
+      text-align: center;
     }
   }
   .selectList {
-    .option-text {
+    .btn-option {
+      width: calc(100% - 20px);
       height: 40px;
       line-height: 40px;
       margin: 10px;
-      padding: 0 10px;
+    }
+    .option-bg {
+      position: relative;
+      z-index: 2;
+      height: 40px;
+      line-height: 40px;
+      margin: 10px;
       border-radius: 10px;
-      background-color: #dde5ec;
+      background-color: #aec4d8;
+      .option-text {
+        position: absolute;
+        z-index: -2;
+        left: 0;
+        top: -5px;
+        width: 100%;
+        height: 100%;
+        padding: 0 10px;
+        box-sizing: border-box;
+        border-radius: 10px;
+        background-color: #dde5ec;
+      }
+      &.clicked .option-text {
+        animation: button-down 0.3s ease-in-out;
+      }
     }
   }
 }
