@@ -44,7 +44,7 @@ export default {
         setTimeout(() => {
           this.justClicked = false;
           this.$emit("click");
-        }, 300);
+        }, 200);
       }
     },
   },
@@ -55,8 +55,11 @@ export default {
   0% {
     transform: translateY(0);
   }
-  20% {
+  30% {
     transform: translateY(5px);
+  }
+  50%{
+    transform:translateY(5px);
   }
   100% {
     transform: translateY(0);
@@ -78,9 +81,12 @@ export default {
     height: 100%;
     padding:0 8px;
     box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   &.clicked .button-content {
-    animation: button-down 0.3s ease-in-out;
+    animation: button-down 0.2s ease;
   }
   &.disabled {
     background-color: #999 !important;
