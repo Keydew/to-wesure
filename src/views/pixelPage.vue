@@ -11,13 +11,16 @@
       </div>
       <p v-if="isEnd" class="ending-text">
         <i class="icon-cube"></i><i class="icon-cube"></i
-        ><i class="icon-cube"></i>对方已下线<i class="icon-cube"></i
-        ><i class="icon-cube"></i><i class="icon-cube"></i>
+        ><i class="icon-cube"></i>
+        对方已下线
+        <i class="icon-cube"></i><i class="icon-cube"></i
+        ><i class="icon-cube"></i>
       </p>
     </div>
     <footer ref="footer">
       <div class="input-row">
-        <input type="text" class="input-text" v-model="curChoice" readonly />
+        <!-- <input type="text" class="input-text" v-model="curChoice" readonly /> -->
+        <div class="input-text">{{ curChoice }}</div>
         <!-- <div
           :class="[
             'btn-send-bg',
@@ -54,7 +57,7 @@
 </template>
 <script>
 import StoryTool from "@/libs/story.js";
-import Button3d from "./Button3d";
+import Button3d from "@/components/Button3d";
 export default {
   components: {
     Button3d,
@@ -66,7 +69,7 @@ export default {
       optionList: [],
       bobChatColor: "#f3f5f7",
       playerChatColor: "#ddeedd", //玩家聊天框背景色
-      chatBorderColor: "#999999", //聊天边框颜色
+      chatBorderColor: "#bbbbbb", //聊天边框颜色
       paddingBottom: "50px",
 
       curChoiceIndex: -1,
@@ -98,7 +101,7 @@ export default {
     },
   },
   methods: {
-    youSay(html) {
+    youSay(text) {
       let len = this.chatRecord.push({
         class: "left",
         msg: ".",
@@ -109,16 +112,19 @@ export default {
       });
 
       return new Promise((resolve, reject) => {
+        // 根据文本长度决定定时器时间长度
+        let times = Math.ceil(text.length / 5);
         let resizeTimer = setInterval(() => {
+          times--;
           let prev = this.chatRecord[len - 1].msg;
-          if (prev == html) {
+          if (prev == text) {
             this.$refs.content.scrollTop = this.$refs.content.scrollHeight;
             clearInterval(resizeTimer);
             resolve();
           } else {
             this.$set(this.chatRecord, len - 1, {
               class: "left",
-              msg: prev == "..." ? html : prev + ".",
+              msg: times <= 0 ? text : prev.length > 2 ? "." : prev + ".",
             });
             this.$nextTick(() => {
               this.createCanvas(this.$refs.chat[len - 1], this.bobChatColor);
@@ -300,10 +306,12 @@ header {
     display: inline-block;
     box-sizing: border-box;
     margin: 15px 15px 0;
-    padding: 10px 12px;
+    padding: 10px 16px;
     max-width: 400px;
     font-size: 16px;
     line-height: 24px;
+    word-break: break-all;
+    word-wrap: break-word;
     image-rendering: pixelated;
     background-size: contain;
     background-position: top left;
@@ -344,18 +352,24 @@ footer {
   .input-row {
     display: flex;
     align-items: center;
-    height: 50px;
+    padding: 8px 0;
+    // height: 50px;
     .input-text {
-      height: 36px;
+      // height: 36px;
+      min-height: 22px;
       flex: 1;
-      padding: 0 10px;
+      padding: 5px 10px;
       margin-left: 5px;
       font-size: 16px;
+      line-height: 22px;
+      word-break: break-all;
       border-radius: 10px;
+      background-color: #fff;
     }
     .btn-send {
       width: 50px;
-      height: 36px;
+      height: 32px;
+      line-height: 32px;
       margin: 0 5px;
       font-size: 16px;
       text-align: center;

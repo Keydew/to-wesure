@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from '@/components/pixelPage'
+import Home from '@/views/pixelPage'
 
 Vue.use(Router)
 
