@@ -56,33 +56,39 @@ VAR bool_tool_ribbon = true  //红丝带
         ->pre_ending
        **好吧，让我来帮你吧
          太好了汪，我就知道你一定是个好人！
-         我现在就准备出发吧
-        ->firstCorner    
+         我们现在就准备出发吧
+        ->first_corner    
 *帮一只狗？我一定是睡眠不足出现了幻觉
 ->pre_ending
 
-=== firstCorner ===
+=== first_corner ===
+现在该做什么呢
 *你现在有什么材料或工具吗
     ->tools
 *你现在在什么环境呢
     ->environment
-*{tools&&environment}向左走
-    好的
-    ->DONE
 *{tools&&environment}向前走吧
     好的
-        ->DONE
+    ->DONE
+*{tools&&environment}向右走吧
+    好的
+    ->DONE
+*{tool&&environment}看看你的汪汪摩托还有什么
+    好的
+    ->first_corner
 
 =tools
     我有一条从蛋糕盒上抢救下的红丝带 #ribbon
-    一个梨子
+    
     啊~好激动汪，不知道用这些能做出什么样的蛋糕
     *这些根本做不出蛋糕啊喂！
     *没有一样可以吃的呢
-    -->firstCorner
+    -我知道我知道，但是你一定有办法把这些变成做蛋糕的材料的汪
+    -->first_corner
 
 =environment
-    ~ bool_tool_ribbon=false
-    我现在在公路边
-    ->firstCorner
+    我现在正在一个岔路口汪，旁边是被撞坏的汪汪摩托，哎呀~说起来，摩托撞坏了，我还得用我的私房粮去修...
+    前面有两条路,一条路直行,道路很是宽阔汪!另一条路往右拐,好像有很多树呢汪!
+
+    ->first_corner
 
