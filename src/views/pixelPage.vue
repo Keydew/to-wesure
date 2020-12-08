@@ -1,14 +1,21 @@
 <template>
   <div class="home">
     <header>???</header>
+    <!-- 对话内容面板 -->
     <div
       class="chat-board"
       ref="content"
       :style="{ paddingBottom: paddingBottom }"
     >
-      <div v-for="(record, index) in chatRecord" :key="index" class="clear-fix">
-        <p ref="chat" :class="['chat-msg', record.class]">{{ record.msg }}</p>
-      </div>
+      <bubble-box
+        v-for="(record, index) in chatRecord"
+        :key="index"
+        ref="bubbles"
+        :type="record.class"
+        :message="record.msg"
+        @scrollToBottom="scrollToBottom"
+        @finished="bubbleFinished"
+      ></bubble-box>
       <p v-if="isEnd" class="ending-text">
         <i class="icon-cube"></i><i class="icon-cube"></i
         ><i class="icon-cube"></i>
@@ -17,19 +24,10 @@
         ><i class="icon-cube"></i>
       </p>
     </div>
+    <!-- 底部对话选项及发送 -->
     <footer ref="footer">
       <div class="input-row">
-        <!-- <input type="text" class="input-text" v-model="curChoice" readonly /> -->
         <div class="input-text">{{ curChoice }}</div>
-        <!-- <div
-          :class="[
-            'btn-send-bg',
-            { disabled: optionList.length == 0 || curChoiceIndex < 0 },
-          ]"
-          @click="curChoiceIndex > -1 ? sendMessage() : ''"
-        >
-          <div class="btn-send-content">发送</div>
-        </div> -->
         <button-3d
           btnColor="#aaccaa"
           bgColor="#6dad6d"
@@ -58,22 +56,20 @@
 <script>
 import StoryTool from "@/libs/story.js";
 import Button3d from "@/components/Button3d";
+import BubbleBox from "@/components/BubbleBox";
 export default {
   components: {
     Button3d,
+    BubbleBox,
   },
   data() {
     return {
       timerResize: null,
       chatRecord: [],
       optionList: [],
-      bobChatColor: "#f3f5f7",
-      playerChatColor: "#ddeedd", //玩家聊天框背景色
-      chatBorderColor: "#bbbbbb", //聊天边框颜色
       paddingBottom: "50px",
 
       curChoiceIndex: -1,
-      justClicked: false,
       isEnd: false,
     };
   },
@@ -95,55 +91,23 @@ export default {
       this.$nextTick(() => {
         this.paddingBottom = this.$refs.footer.offsetHeight + "px";
         this.$nextTick(() => {
-          this.$refs.content.scrollTop = this.$refs.content.scrollHeight;
+          this.scrollToBottom();
         });
       });
     },
   },
   methods: {
+    // 故事对话的回调方法
     youSay(text) {
       let len = this.chatRecord.push({
         class: "left",
-        msg: ".",
-      });
-      this.$nextTick(() => {
-        this.createCanvas(this.$refs.chat[len - 1], this.bobChatColor);
-        this.$refs.content.scrollTop = this.$refs.content.scrollHeight;
-      });
-
-      return new Promise((resolve, reject) => {
-        // 根据文本长度决定定时器时间长度
-        let times = Math.ceil(text.length / 5);
-        let resizeTimer = setInterval(() => {
-          times--;
-          let prev = this.chatRecord[len - 1].msg;
-          if (prev == text) {
-            this.$refs.content.scrollTop = this.$refs.content.scrollHeight;
-            clearInterval(resizeTimer);
-            resolve();
-          } else {
-            this.$set(this.chatRecord, len - 1, {
-              class: "left",
-              msg: times <= 0 ? text : prev.length > 2 ? "." : prev + ".",
-            });
-            this.$nextTick(() => {
-              this.createCanvas(this.$refs.chat[len - 1], this.bobChatColor);
-            });
-          }
-        }, 500);
+        msg: text,
       });
     },
     iSay(msg) {
-      return new Promise((resolve) => {
-        let len = this.chatRecord.push({
-          class: "right",
-          msg,
-        });
-        this.$nextTick(() => {
-          this.createCanvas(this.$refs.chat[len - 1], this.playerChatColor);
-          this.$refs.content.scrollTop = this.$refs.content.scrollHeight;
-          setTimeout(resolve, 1000);
-        });
+      let len = this.chatRecord.push({
+        class: "right",
+        msg,
       });
     },
     ending() {
@@ -151,101 +115,34 @@ export default {
         this.isEnd = true;
       }, 1000);
     },
-    createCanvas(ele, color) {
-      let canvas = document.createElement("canvas"),
-        ctx = canvas.getContext("2d");
-      let width = Math.round(parseInt(ele.offsetWidth) / 3),
-        height = Math.round(parseInt(ele.offsetHeight) / 3);
-      let xAdd = ele.className.indexOf("left") > -1 ? 3 : 0,
-        xReduce = ele.className.indexOf("right") > -1 ? 3 : 0;
 
-      canvas.width = width;
-      canvas.height = height;
-      ctx.lineWidth = 1;
-      ctx.fillStyle = color;
-
-      // 绘制尖角纯色填充
-      if (ele.className.indexOf("left") > -1) {
-        xAdd = 3;
-
-        ctx.fillRect(2, 7, 1, 1);
-        ctx.fillRect(3, 6, 1, 3);
-        ctx.fillRect(4, 5, 1, 5);
-      } else {
-        xReduce = 3;
-
-        ctx.fillRect(width - 3, 7, 1, 1);
-        ctx.fillRect(width - 4, 6, 1, 3);
-        ctx.fillRect(width - 5, 5, 1, 5);
-      }
-      let boxWidth = width - xReduce;
-
-      // 绘制聊天框纯色背景
-      ctx.fillRect(4 + xAdd, 1, boxWidth - 8 - xAdd, 1);
-      ctx.fillRect(2 + xAdd, 2, boxWidth - 4 - xAdd, 2);
-      ctx.fillRect(1 + xAdd, 4, boxWidth - 2 - xAdd, height - 8);
-      ctx.fillRect(2 + xAdd, height - 4, boxWidth - 4 - xAdd, 2);
-      ctx.fillRect(4 + xAdd, height - 2, boxWidth - 8 - xAdd, 1);
-
-      // 绘制聊天边框
-      ctx.fillStyle = this.chatBorderColor;
-      // 左上
-      ctx.fillRect(1 + xAdd, 2, 1, 2);
-      ctx.fillRect(2 + xAdd, 1, 2, 1);
-      // 右上
-      ctx.fillRect(boxWidth - 4, 1, 2, 1);
-      ctx.fillRect(boxWidth - 2, 2, 1, 2);
-      // 右下
-      ctx.fillRect(boxWidth - 2, height - 4, 1, 2);
-      ctx.fillRect(boxWidth - 4, height - 2, 2, 1);
-      // 左下
-      ctx.fillRect(1 + xAdd, height - 4, 1, 2);
-      ctx.fillRect(2 + xAdd, height - 2, 2, 1);
-      // 上下
-      ctx.fillRect(4 + xAdd, 0, boxWidth - 8 - xAdd, 1);
-      ctx.fillRect(4 + xAdd, height - 1, boxWidth - 8 - xAdd, 1);
-
-      // 绘制左右边框及尖角部分
-      if (ele.className.indexOf("left") > -1) {
-        ctx.fillRect(3, 4, 1, 2);
-        ctx.fillRect(2, 6, 1, 1);
-        ctx.fillRect(1, 7, 1, 1);
-        ctx.fillRect(2, 8, 1, 1);
-        ctx.fillRect(3, 9, 1, height - 13);
-
-        ctx.fillRect(width - 1, 4, 1, height - 8);
-      } else {
-        ctx.fillRect(width - 4, 4, 1, 2);
-        ctx.fillRect(width - 3, 6, 1, 1);
-        ctx.fillRect(width - 2, 7, 1, 1);
-        ctx.fillRect(width - 3, 8, 1, 1);
-        ctx.fillRect(width - 4, 9, 1, height - 13);
-
-        ctx.fillRect(0, 4, 1, height - 8);
-      }
-
-      let imgUrl = canvas.toDataURL();
-      ele.style.backgroundImage = "url(" + imgUrl + ")";
+    // 对话内容相关事件方法
+    bubbleFinished(isSetTimeOut) {
+      this.scrollToBottom();
+      setTimeout(
+        () => {
+          StoryTool.continueStory();
+        },
+        isSetTimeOut ? 1000 : 0
+      );
     },
+    scrollToBottom() {
+      this.$refs.content.scrollTop = this.$refs.content.scrollHeight;
+    },
+
+    // 页面尺寸变化后的重绘
     paint() {
-      this.chatRecord.forEach((record, index) => {
-        this.createCanvas(
-          this.$refs.chat[index],
-          this.getBgColor(record.class)
-        );
+      this.$refs.bubbles.forEach((bubble, index) => {
+        bubble.createCanvas();
       });
-    },
-    getBgColor(type) {
-      return {
-        left: this.bobChatColor,
-        right: this.playerChatColor,
-      }[type];
     },
     resizeFn() {
       clearTimeout(this.timerResize);
       this.timerResize = setTimeout(this.paint, 50);
     },
 
+
+    // 底部选项相关
     showOptions(optionList) {
       this.optionList = optionList;
     },
