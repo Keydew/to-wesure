@@ -99,13 +99,13 @@ export default {
   methods: {
     // 故事对话的回调方法
     youSay(text) {
-      let len = this.chatRecord.push({
+      this.chatRecord.push({
         class: "left",
         msg: text,
       });
     },
     iSay(msg) {
-      let len = this.chatRecord.push({
+      this.chatRecord.push({
         class: "right",
         msg,
       });
@@ -113,18 +113,16 @@ export default {
     ending() {
       setTimeout(() => {
         this.isEnd = true;
+        this.scrollToBottom();
       }, 1000);
     },
 
     // 对话内容相关事件方法
-    bubbleFinished(isSetTimeOut) {
+    bubbleFinished(time) {
       this.scrollToBottom();
-      setTimeout(
-        () => {
-          StoryTool.continueStory();
-        },
-        isSetTimeOut ? 1000 : 0
-      );
+      setTimeout(() => {
+        StoryTool.continueStory();
+      }, Math.max(time, 0));
     },
     scrollToBottom() {
       this.$refs.content.scrollTop = this.$refs.content.scrollHeight;
@@ -140,7 +138,6 @@ export default {
       clearTimeout(this.timerResize);
       this.timerResize = setTimeout(this.paint, 50);
     },
-
 
     // 底部选项相关
     showOptions(optionList) {
@@ -161,21 +158,6 @@ export default {
 };
 </script>
 <style lang="scss" scoped>
-@keyframes button-down {
-  0% {
-    transform: translateY(0);
-  }
-  20% {
-    transform: translateY(5px);
-  }
-  80% {
-    transform: translateY(5px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
 .home {
   position: relative;
   display: flex;
@@ -278,30 +260,6 @@ footer {
       height: 40px;
       line-height: 40px;
       margin: 10px;
-    }
-    .option-bg {
-      position: relative;
-      z-index: 2;
-      height: 40px;
-      line-height: 40px;
-      margin: 10px;
-      border-radius: 10px;
-      background-color: #aec4d8;
-      .option-text {
-        position: absolute;
-        z-index: -2;
-        left: 0;
-        top: -5px;
-        width: 100%;
-        height: 100%;
-        padding: 0 10px;
-        box-sizing: border-box;
-        border-radius: 10px;
-        background-color: #dde5ec;
-      }
-      &.clicked .option-text {
-        animation: button-down 0.3s ease-in-out;
-      }
     }
   }
 }

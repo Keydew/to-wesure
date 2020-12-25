@@ -35,26 +35,24 @@ export default {
 
     if (this.type == "left") {
       // 初始增加聊天框先滚动到底部
-      this.$emit("scrollToBottom");
+      this.$nextTick(() => {
+        this.$emit("scrollToBottom");
 
-      // 根据文本长度决定定时器时间长度
-      let times = Math.ceil(this.message.length / 5);
-      this.resizeTimer = setInterval(() => {
-        times--;
-        if (this.showText == this.message) {
-          clearInterval(this.resizeTimer);
-          this.$emit("finished");
-        } else {
-          this.showText =
-            times <= 0
-              ? this.message
-              : this.showText.length > 2
-              ? "."
-              : this.showText + ".";
-        }
-      }, 500);
+        // 根据文本长度决定定时器时间长度
+        let times = Math.ceil(this.message.length / 5);
+        document.addEventListener("click", this._finishWaiting);
+        this.resizeTimer = setInterval(() => {
+          times--;
+          if (times <= 0) {
+            this._finishWaiting();
+          } else {
+            this.showText =
+              this.showText.length > 2 ? "." : this.showText + ".";
+          }
+        }, 500);
+      });
     } else {
-      this.$emit("finished", true);
+      this.$emit("finished", 1000);
     }
   },
   methods: {
@@ -137,10 +135,27 @@ export default {
       let imgUrl = canvas.toDataURL();
       ele.style.backgroundImage = "url(" + imgUrl + ")";
     },
+    _finishWaiting() {
+      this.showText = this.message;
+      clearInterval(this.resizeTimer);
+      document.removeEventListener("click", this._finishWaiting);
+      this.$emit("finished", 500);
+    },
   },
 };
 </script>
 <style lang="scss" scoped>
+@keyframes showBubble {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .chat-msg {
   display: inline-block;
   box-sizing: border-box;
@@ -155,6 +170,8 @@ export default {
   background-size: contain;
   background-position: top left;
   background-repeat: no-repeat;
+
+  animation: showBubble ease-out 0.5s;
   &.left {
     float: left;
     padding-left: 24px;
