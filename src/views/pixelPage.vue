@@ -8,11 +8,19 @@
       :style="{ paddingBottom: paddingBottom }"
     >
       <bubble-box
+        v-for="(record, index) in historyRecord"
+        :key="'his-' + index"
+        :type="record.class"
+        :message="record.msg"
+        @finished="bubbleFinished"
+      ></bubble-box>
+      <bubble-box
         v-for="(record, index) in chatRecord"
-        :key="index"
+        :key="'cur-' + index"
         ref="bubbles"
         :type="record.class"
         :message="record.msg"
+        :animate="true"
         @scrollToBottom="scrollToBottom"
         @finished="bubbleFinished"
       ></bubble-box>
@@ -54,7 +62,7 @@
   </div>
 </template>
 <script>
-import StoryTool from "@/libs/story.js";
+import Story from "@/libs/story.js";
 import Button3d from "@/components/Button3d";
 import BubbleBox from "@/components/BubbleBox";
 export default {
@@ -64,7 +72,11 @@ export default {
   },
   data() {
     return {
+      story: null,
+
       timerResize: null,
+      history: [],
+      historyRecord: [],
       chatRecord: [],
       optionList: [],
       paddingBottom: "50px",
@@ -82,10 +94,6 @@ export default {
       }
     },
   },
-  created() {
-    StoryTool.startStory(this.youSay, this.iSay, this.showOptions, this.ending);
-    window.addEventListener("resize", this.resizeFn);
-  },
   watch: {
     optionList: function () {
       this.$nextTick(() => {
@@ -96,7 +104,49 @@ export default {
       });
     },
   },
+  created() {
+    this.story = new Story(null, null, null, this.ending);
+    let list = localStorage.getItem("wesure_history");
+    if (list) {
+      list = JSON.parse(list);
+      this.startFromHistory(list);
+    } else {
+      this.startNew();
+    }
+
+    this.story.startStory();
+    window.addEventListener("resize", this.resizeFn);
+  },
   methods: {
+    startFromHistory(list) {
+      this.story.youSayFn = (text) => {
+        this.historyRecord.push({
+          class: "left",
+          msg: text,
+        });
+      };
+      this.story.playerSayFn = (text) => {
+        this.historyRecord.push({
+          class: "right",
+          msg: text,
+        });
+      };
+      this.story.showOptionsFn = (options) => {
+        if (list.length) {
+          this.curChoiceIndex = list.shift();
+          this.sendMessage();
+        } else {
+          this.showOptions(options);
+          this.startNew();
+        }
+      };
+    },
+    startNew() {
+      this.story.youSayFn = this.youSay;
+      this.story.playerSayFn = this.iSay;
+      this.story.showOptionsFn = this.showOptions;
+    },
+
     // 故事对话的回调方法
     youSay(text) {
       this.chatRecord.push({
@@ -121,7 +171,7 @@ export default {
     bubbleFinished(time) {
       this.scrollToBottom();
       setTimeout(() => {
-        StoryTool.continueStory();
+        this.story.continueStory();
       }, Math.max(time, 0));
     },
     scrollToBottom() {
@@ -144,7 +194,9 @@ export default {
       this.optionList = optionList;
     },
     sendMessage() {
-      StoryTool.chooseChoice(this.curChoiceIndex);
+      this.story.chooseChoice(this.curChoiceIndex);
+      this.history.push(this.curChoiceIndex);
+      localStorage.setItem("wesure_history", JSON.stringify(this.history));
       this.optionList = [];
       this.curChoiceIndex = -1;
     },

@@ -17,6 +17,7 @@ export default {
   props: {
     type: { type: String, default: "left" },
     message: String,
+    animate: { type: Boolean, default: false },
   },
   watch: {
     showText(val, oldVal) {
@@ -31,6 +32,12 @@ export default {
     },
   },
   mounted() {
+    if (!this.animate) {
+      this.showText = this.message;
+      this.$emit("finished");
+      return;
+    }
+
     this.showText = this.type == "left" ? "." : this.message;
 
     if (this.type == "left") {
@@ -139,7 +146,9 @@ export default {
       this.showText = this.message;
       clearInterval(this.resizeTimer);
       document.removeEventListener("click", this._finishWaiting);
-      this.$emit("finished", 500);
+      this.$nextTick(() => {
+        this.$emit("finished", 500);
+      });
     },
   },
 };
