@@ -12,13 +12,15 @@ export default {
 
 <style>
 html,
-body {
+body,
+#app {
+  width: 100%;
   height: 100%;
+  overflow: auto;
 }
 #app {
   max-width: 480px;
   min-width: 320px;
   margin: 0 auto;
-  height: 100%;
 }
 </style>
