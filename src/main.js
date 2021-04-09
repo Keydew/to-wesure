@@ -3,11 +3,13 @@
 import Vue from 'vue'
 import App from './App'
 import router from './router'
+import Confirm from './components/Confirm'
 import '@/style/common.css'
 // import Vconsole from 'vconsole';
 
 // var vcon = new Vconsole();
 Vue.config.productionTip = false
+Vue.use(Confirm);
 
 /* eslint-disable no-new */
 new Vue({
