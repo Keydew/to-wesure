@@ -212,6 +212,7 @@ export default {
           this.historyRecord = [];
           this.chatRecord = [];
           this.optionList = [];
+          this.isEnd = false;
           this.$nextTick(() => {
             this.startNew();
             this.story.startStory();
@@ -338,7 +339,7 @@ header {
     width: 140px;
     background: #fff;
     border-radius: 10px;
-    box-shadow: 0 3px 5px 0 rgba(0,0,0,.1);
+    box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.1);
     .setting-list {
       padding: 10px 0;
       .setting-item {
